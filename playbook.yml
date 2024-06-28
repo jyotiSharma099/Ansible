@@ -1,0 +1,103 @@
+---
+- name: This playbook is used to create a user
+  hosts: localhost
+  become: true
+# pass variables in playbook
+# vars:
+#   user: tom
+# pass variables from file
+  vars_files:
+    - variables.yml
+  tasks: 
+    - name: Create user test
+      user: 
+        name: test
+# we can pass variables while runing ansible playbook like ansible-playbook playbook.yml --ask-become-pass -e "user=test" or ansible-playbook playbook.yml --ask-become-pass --extra-vars "user=test"
+    - name: creating user by calling variable
+      user:
+        name: "{{ user }}"
+
+    - name: Install packages
+      apt:
+        name: 
+          - git
+          - tree
+        state: latest
+  # we can define list in this way 
+    - name: Define list of packages 
+      apt:
+        name: ['git', 'tree', 'gzip', 'wget']    ## define list
+        state: latest
+
+  # we can use item as variable and mention all pkgs under the with items
+
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - git
+        - make
+        - wget
+
+    - name: Create file
+      file: 
+        path: /home/jyotisharma/Ansible/testing
+        state: touch
+        mode: '0755'
+        owner: jyotisharma
+        group: jyotisharma
+
+    - name: Create Dir
+      file: 
+       path: /home/jyotisharma/Ansible/demo
+       state: directory
+
+    - name: Copy file from one location to another
+      copy:
+       src: /home/jyotisharma/Ansible/index.html
+       dest: /home/jyotisharma/Ansible/testing
+
+    - name: Update apt package cache
+      apt: 
+        update_cache: yes
+
+    - name: Install apache2
+      apt:
+        name: apache2
+        state: present
+      notify: Start Apache service      ##Notify will be the same as the name under the handlers
+      when: ansible_os_family == "Debian" 
+  handlers: 
+    - name: Start Apache service
+      service:
+        name: apache2
+        state: start
+      when: ansible_os_family == "Debian" 
+
+    - name: stop apache2 service
+      service: 
+        name: apache2
+        state: stopped
+      when: ansible_os_family == "Debian"
+      tags: stop apache2     # ansible-playbook setup_tomcat.yml --ask-become-pass --tags "stop apache2"  
+# we can work as target means it  will run only one service from whole playbook
+    - name: uninstall apache2
+      service: 
+        name: apache2
+        state: absent
+      when: ansible_os_family == "Debian"
+
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat" 
+ 
+    - name: Start httpd service
+      service:
+        name: httpd
+        state: stopped
+      when: ansible_os_family == "Redhat" 
+
+

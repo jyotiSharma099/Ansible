@@ -1,0 +1,16 @@
+---
+- name: ansible palybook to test ansible vault
+  hosts: all
+  become: true
+  vars_files:
+    - vault-pass.yml
+  tasks:
+  - name: clone a repo
+    git: 
+    repo: https://jyotisharma099:{{ password }}@github.com/jyotisharma099/vault.git  # we can clone the Private repo using (https://username:password@githhub.com/jyotisharma099/vault.git)
+    dest: /opt/ansadmin/test-vault
+
+# ansible-playbook ansible-vault.yml --ask-vault-pass
+# or 
+# we can also pass the yml file for password 
+# ansible-playbook ansible-vault.yml --vault-password-file vault-pass.yml
